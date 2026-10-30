@@ -51,6 +51,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         skipAuthRefresh: true,
       })
       setAccessToken(result.access)
+      if (result.refresh && result.refresh !== refreshToken) {
+        writeRefreshToken(result.refresh)
+      }
       return result.access
     } catch {
       clearSession()
@@ -114,7 +117,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     [signIn],
   )
 
-  const logout = useCallback(() => {
+  const logout = useCallback(async () => {
+    const refreshToken = readRefreshToken()
+    if (refreshToken) {
+      try {
+        await apiFetch('/api/auth/logout/', 'post', {
+          body: { refresh: refreshToken },
+          skipAuthRefresh: true,
+        })
+      } catch {
+        // The token may already be expired or revoked; signing out locally still applies.
+      }
+    }
     clearSession()
   }, [clearSession])
 

@@ -7,7 +7,7 @@ export type AuthContextValue = {
   loading: boolean
   login: (phone: string, password: string) => Promise<void>
   registerGym: (input: RegisterGym) => Promise<RegisteredGym>
-  logout: () => void
+  logout: () => Promise<void>
   hasPermission: (code: StaffPermissionCode) => boolean
 }
 
