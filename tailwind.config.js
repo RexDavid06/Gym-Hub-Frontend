@@ -1,0 +1,2 @@
+/** @type {import('tailwindcss').Config} */
+export default { content: ['./index.html', './src/**/*.{ts,tsx}'], theme: { extend: { colors: { brand: { navy: '#0B1F3A', 'navy-light': '#16345C', orange: '#FF6B1A', 'orange-dark': '#E55A0F', background: '#F4F6FA', text: '#0F172A', muted: '#64748B', success: '#16A34A', warning: '#F59E0B', danger: '#DC2626' } }, borderRadius: { card: '12px' }, fontFamily: { heading: ['Poppins', 'sans-serif'], body: ['Inter', 'sans-serif'] } } }, plugins: [] }
