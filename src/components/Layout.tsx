@@ -20,7 +20,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
   ].filter((item) => item.show)
 
   const signOut = () => {
-    logout()
+    void logout()
     navigate('/login')
   }
 

@@ -27,7 +27,9 @@ schema with the typed wrapper in `src/api/client.ts`.
 Login uses phone number and password. The access token is kept in memory only and
 the refresh token is stored in `sessionStorage` for this phase. Requests retry once
 with a fresh access token after a 401, and the session is loaded from `/api/me/`
-after login and on reload.
+after login and on reload. Refresh tokens rotate on every refresh, so the rotated
+token replaces the stored one. Signing out calls `POST /api/auth/logout/` to revoke
+the refresh token before clearing local state.
 
 TODO: move the refresh token to a secure, httpOnly cookie with CSRF protection
 before production. `sessionStorage` is readable by JavaScript and is only a
@@ -46,4 +48,6 @@ temporary phase-2 choice.
   All authorization is still enforced by the backend API.
 
 Brand colors and fonts are defined in `tailwind.config.js`; `VITE_API_BASE_URL`
-points the app at the API (default `http://127.0.0.1:8000/api`).
+points at the API origin with no path suffix (default `http://127.0.0.1:8000`).
+The client appends the `/api/...` path itself, so a value ending in `/api` would
+produce `/api/api/...` requests.
