@@ -41,6 +41,7 @@ temporary phase-2 choice.
 - Owner team management: admin list, staff permission switches, and deactivate
   confirmation.
 - Gym users list with a server-side role filter.
+- Member assignment: assign or unassign each member to a trainer.
 - Loading, empty, and error states throughout, with permission-aware navigation.
   All authorization is still enforced by the backend API.
 
