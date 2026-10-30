@@ -2,6 +2,8 @@ import type { components } from './schema'
 
 export type Me = components['schemas']['Me']
 export type UserList = components['schemas']['UserList']
+export type UserSummary = components['schemas']['UserSummary']
+export type MemberTrainer = components['schemas']['MemberTrainer']
 export type InviteList = components['schemas']['InviteList']
 export type InviteCreated = components['schemas']['InviteCreated']
 export type InviteCreate = components['schemas']['InviteCreate']

@@ -32,6 +32,18 @@ export function canViewUsers(profile: Me) {
   )
 }
 
+export function canViewMembers(profile: Me) {
+  return (
+    profile.role === 'owner' ||
+    hasPermission(profile, 'manage_members') ||
+    hasPermission(profile, 'assign_trainers')
+  )
+}
+
+export function canAssignTrainers(profile: Me) {
+  return profile.role === 'owner' || hasPermission(profile, 'assign_trainers')
+}
+
 export function inviteRolesFor(profile: Me): InviteRole[] {
   if (profile.role === 'owner') return ['admin', 'trainer', 'member']
   const roles: InviteRole[] = []

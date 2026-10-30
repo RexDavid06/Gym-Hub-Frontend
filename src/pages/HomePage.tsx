@@ -1,5 +1,5 @@
 import { useAuth } from '../auth/useAuth'
-import { canViewUsers, inviteRolesFor, roleLabel, staffPermissions } from '../lib/permissions'
+import { canViewMembers, canViewUsers, inviteRolesFor, roleLabel, staffPermissions } from '../lib/permissions'
 import { Link } from '../components/Link'
 import { Badge, Card, PageHeader } from '../components/ui'
 
@@ -35,6 +35,12 @@ export function HomePage() {
       description: 'Filter the people in your gym by role.',
       show: canViewUsers(profile),
     },
+    {
+      to: '/members',
+      title: 'Members',
+      description: 'Assign members to trainers so trainers know who they support.',
+      show: canViewMembers(profile),
+    },
   ].filter((link) => link.show)
 
   return (
@@ -54,7 +60,7 @@ export function HomePage() {
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
               {profile.gym?.name ?? 'No gym assigned'}
             </p>
-            <h2 className="mt-2 font-heading text-2xl font-semibold">{profile.phone}</h2>
+            <h2 className="mt-2 font-heading text-2xl font-semibold">{profile.name || profile.phone}</h2>
             <p className="mt-1 text-sm text-blue-100">
               Signed in as {roleLabel(profile.role)}
             </p>
