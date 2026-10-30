@@ -5,12 +5,13 @@ import { useAuth } from './auth/useAuth'
 import { Layout } from './components/Layout'
 import { Button, Card, LoadingState } from './components/ui'
 import { Link } from './components/Link'
-import { canViewMembers, canViewUsers, inviteRolesFor } from './lib/permissions'
+import { canManagePayments, canViewMembers, canViewUsers, inviteRolesFor } from './lib/permissions'
 import { HomePage } from './pages/HomePage'
 import { InvitePeoplePage } from './pages/InvitePeoplePage'
 import { InvitesListPage } from './pages/InvitesListPage'
 import { LoginPage } from './pages/LoginPage'
 import { MembersPage } from './pages/MembersPage'
+import { PlansPage } from './pages/PlansPage'
 import { RegisterGymPage } from './pages/RegisterGymPage'
 import { TeamPage } from './pages/TeamPage'
 import { UsersPage } from './pages/UsersPage'
@@ -83,6 +84,8 @@ function AppRoutes() {
     page = canViewUsers(profile) ? <UsersPage /> : <AccessDenied />
   } else if (route === '/members') {
     page = canViewMembers(profile) ? <MembersPage /> : <AccessDenied />
+  } else if (route === '/plans') {
+    page = canManagePayments(profile) ? <PlansPage /> : <AccessDenied />
   } else {
     page = (
       <Card className="mx-auto max-w-lg text-center">

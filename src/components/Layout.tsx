@@ -1,5 +1,5 @@
 import { useAuth } from '../auth/useAuth'
-import { canViewMembers, canViewUsers, inviteRolesFor, roleLabel } from '../lib/permissions'
+import { canManagePayments, canViewMembers, canViewUsers, inviteRolesFor, roleLabel } from '../lib/permissions'
 import { Link } from './Link'
 import { navigate, useRoute } from '../lib/router'
 import { Badge, Button } from './ui'
@@ -17,6 +17,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { to: '/team', label: 'Team', show: profile.role === 'owner' },
     { to: '/users', label: 'Users', show: canViewUsers(profile) },
     { to: '/members', label: 'Members', show: canViewMembers(profile) },
+    { to: '/plans', label: 'Plans', show: canManagePayments(profile) },
   ].filter((item) => item.show)
 
   const signOut = () => {
