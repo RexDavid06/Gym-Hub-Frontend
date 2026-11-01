@@ -1,6 +1,6 @@
 import type { MembershipPayment } from '../api/types'
 import type { Me } from '../api/types'
-import { formatDate } from '../lib/format'
+import { formatDate, formatDay } from '../lib/format'
 import { formatNaira } from '../lib/money'
 import { Button } from './ui'
 
@@ -23,14 +23,14 @@ export function ReceiptDialog({
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center bg-brand-navy/50 p-4 sm:items-center"
+      className="receipt-overlay fixed inset-0 z-50 flex items-end justify-center bg-brand-navy/50 p-4 sm:items-center"
       role="presentation"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose()
       }}
     >
-      <div className="no-print w-full max-w-md rounded-card bg-white p-6 shadow-2xl">
-        <div className="flex items-start justify-between gap-4">
+      <div className="receipt-panel w-full max-w-md rounded-card bg-white p-6 shadow-2xl">
+        <div className="no-print flex items-start justify-between gap-4">
           <div>
             <p className="text-xs font-bold uppercase tracking-[0.18em] text-brand-orange">
               Gym Hub
@@ -76,7 +76,7 @@ export function ReceiptDialog({
             </div>
             <div className="flex justify-between gap-4">
               <dt className="text-brand-muted">Paid on</dt>
-              <dd className="text-right text-brand-text">{formatDate(payment.paid_at)}</dd>
+              <dd className="text-right text-brand-text">{formatDay(payment.paid_at)}</dd>
             </div>
             {payment.reference ? (
               <div className="flex justify-between gap-4">
@@ -98,7 +98,7 @@ export function ReceiptDialog({
           ) : null}
         </div>
 
-        <div className="mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        <div className="no-print mt-5 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>
