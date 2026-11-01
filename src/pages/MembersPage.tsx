@@ -3,6 +3,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { apiFetch, buildApiPath } from '../api/client'
 import type { UserList, UserSummary } from '../api/types'
 import { useAuth } from '../auth/useAuth'
+import { Link } from '../components/Link'
 import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, PageHeader } from '../components/ui'
 import { canAssignTrainers } from '../lib/permissions'
 
@@ -74,7 +75,13 @@ function MemberCard({
             </Badge>
           </div>
           <p className="mt-1 text-sm text-brand-muted">{member.phone}</p>
-          <p className="mt-3 text-sm text-brand-text">
+          <Link
+            to={`/members/${member.id}`}
+            className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-brand-navy-light hover:underline"
+          >
+            View membership
+          </Link>
+          <p className="mt-1 text-sm text-brand-text">
             Trainer:{' '}
             <span className="font-semibold">
               {member.assigned_trainer?.name || 'Not assigned'}

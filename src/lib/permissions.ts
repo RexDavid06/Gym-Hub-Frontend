@@ -44,6 +44,10 @@ export function canAssignTrainers(profile: Me) {
   return profile.role === 'owner' || hasPermission(profile, 'assign_trainers')
 }
 
+export function canManagePayments(profile: Me) {
+  return hasPermission(profile, 'manage_payments')
+}
+
 export function inviteRolesFor(profile: Me): InviteRole[] {
   if (profile.role === 'owner') return ['admin', 'trainer', 'member']
   const roles: InviteRole[] = []

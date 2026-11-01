@@ -4,6 +4,7 @@ import { apiFetch, buildApiPath } from '../api/client'
 import type { UserList, UserRole } from '../api/types'
 import { useAuth } from '../auth/useAuth'
 import { ConfirmDialog } from '../components/ConfirmDialog'
+import { Link } from '../components/Link'
 import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, PageHeader } from '../components/ui'
 import { formatDate, formatRole } from '../lib/format'
 import { userRoleFiltersFor } from '../lib/permissions'
@@ -136,7 +137,16 @@ export function UsersPage() {
                   return (
                     <tr key={user.id}>
                       <td className="px-5 py-4">
-                        <p className="font-semibold text-brand-navy">{user.name || 'Unnamed'}</p>
+                        {user.role === 'member' ? (
+                          <Link
+                            to={`/members/${user.id}`}
+                            className="font-semibold text-brand-navy hover:underline"
+                          >
+                            {user.name || 'Unnamed'}
+                          </Link>
+                        ) : (
+                          <p className="font-semibold text-brand-navy">{user.name || 'Unnamed'}</p>
+                        )}
                         <p className="text-xs text-brand-muted">{user.phone}</p>
                       </td>
                       <td className="px-5 py-4">
@@ -176,9 +186,18 @@ export function UsersPage() {
                 <Card key={user.id}>
                   <div className="flex items-start justify-between gap-3">
                     <div>
-                      <p className="font-heading font-semibold text-brand-navy">
-                        {user.name || 'Unnamed'}
-                      </p>
+                      {user.role === 'member' ? (
+                        <Link
+                          to={`/members/${user.id}`}
+                          className="font-heading font-semibold text-brand-navy hover:underline"
+                        >
+                          {user.name || 'Unnamed'}
+                        </Link>
+                      ) : (
+                        <p className="font-heading font-semibold text-brand-navy">
+                          {user.name || 'Unnamed'}
+                        </p>
+                      )}
                       <p className="text-sm text-brand-muted">{user.phone}</p>
                     </div>
                     <Badge tone={roleTones[user.role ?? 'member']}>{formatRole(user.role)}</Badge>

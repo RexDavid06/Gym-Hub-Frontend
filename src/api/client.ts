@@ -10,11 +10,20 @@ type PathsFor<M extends ApiMethod> = {
 type Operation<P extends ApiPath, M extends ApiMethod> = paths[P] extends Record<M, infer O>
   ? O
   : never
-type JsonBody<O> = O extends {
-  requestBody: { content: { 'application/json': infer B } }
-}
-  ? B
+type JsonBody<O> = O extends { requestBody?: { content?: { 'application/json'?: infer B } } }
+  ? B extends undefined
+    ? never
+    : RequestBody<NonNullable<B>>
   : never
+
+/**
+ * drf-spectacular sometimes reuses a response resource as the request body,
+ * which drags read-only fields the API ignores (id, created_at, updated_at)
+ * into the type. Those become optional here; required fields on explicitly
+ * generated request schemas (invites, logins, payments) are untouched.
+ */
+
+type RequestBody<B> = B extends { readonly id: number } ? Partial<B> : B
 type Query<O> = O extends { parameters: { query?: infer Q } } ? Q : never
 type SuccessResponse<O> = O extends { responses: infer R }
   ? {

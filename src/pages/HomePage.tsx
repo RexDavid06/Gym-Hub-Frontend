@@ -1,6 +1,7 @@
 import { useAuth } from '../auth/useAuth'
 import { canViewMembers, canViewUsers, inviteRolesFor, roleLabel, staffPermissions } from '../lib/permissions'
 import { Link } from '../components/Link'
+import { MembershipDashboard } from '../components/MembershipDashboard'
 import { Badge, Card, PageHeader } from '../components/ui'
 
 export function HomePage() {
@@ -74,6 +75,8 @@ export function HomePage() {
           </div>
         </div>
       </Card>
+
+      <MembershipDashboard />
 
       {isStaff ? (
         <div className="grid gap-4 sm:grid-cols-2">

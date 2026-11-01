@@ -26,3 +26,47 @@
     box-sizing: border-box;
   }
 }
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+
+  #receipt,
+  #receipt * {
+    visibility: visible;
+  }
+
+  #receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    border: 1px solid #000;
+    color: #000;
+    background: #fff;
+  }
+
+  #receipt * {
+    color: #000 !important;
+    background: #fff !important;
+    border-color: #000 !important;
+  }
+
+  .receipt-overlay {
+    position: static;
+    display: block;
+    background: #fff;
+    padding: 0;
+  }
+
+  .receipt-panel {
+    max-width: none;
+    padding: 0;
+    box-shadow: none;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+}
