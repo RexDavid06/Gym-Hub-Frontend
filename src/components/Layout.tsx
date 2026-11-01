@@ -20,6 +20,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
     { to: '/plans', label: 'Plans', show: canManagePayments(profile) },
   ].filter((item) => item.show)
 
+  const isActive = (to: string) =>
+    route === to || (to !== '/' && route.startsWith(`${to}/`))
+
   const signOut = () => {
     void logout()
     navigate('/login')
@@ -47,7 +50,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               key={item.to}
               to={item.to}
               className={`block rounded-xl px-3.5 py-3 text-sm font-semibold transition ${
-                route === item.to
+                isActive(item.to)
                   ? 'bg-brand-navy text-white'
                   : 'text-brand-muted hover:bg-slate-100 hover:text-brand-navy'
               }`}
@@ -100,7 +103,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
                 key={item.to}
                 to={item.to}
                 className={`whitespace-nowrap rounded-lg px-3 py-2 text-sm font-semibold ${
-                  route === item.to
+                  isActive(item.to)
                     ? 'bg-brand-navy text-white'
                     : 'text-brand-muted hover:bg-slate-100'
                 }`}

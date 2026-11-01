@@ -10,6 +10,7 @@ import { HomePage } from './pages/HomePage'
 import { InvitePeoplePage } from './pages/InvitePeoplePage'
 import { InvitesListPage } from './pages/InvitesListPage'
 import { LoginPage } from './pages/LoginPage'
+import { MemberDetailPage } from './pages/MemberDetailPage'
 import { MembersPage } from './pages/MembersPage'
 import { PlansPage } from './pages/PlansPage'
 import { RegisterGymPage } from './pages/RegisterGymPage'
@@ -70,6 +71,9 @@ function AppRoutes() {
     )
   }
 
+  const [routePath, queryString = ''] = route.split('?')
+  const memberMatch = /^\/members\/(\d+)$/.exec(routePath)
+
   let page: React.ReactNode
   if (route === '/') {
     page = <HomePage />
@@ -84,6 +88,15 @@ function AppRoutes() {
     page = canViewUsers(profile) ? <UsersPage /> : <AccessDenied />
   } else if (route === '/members') {
     page = canViewMembers(profile) ? <MembersPage /> : <AccessDenied />
+  } else if (memberMatch) {
+    page = canViewMembers(profile) ? (
+      <MemberDetailPage
+        memberId={Number(memberMatch[1])}
+        openRenew={new URLSearchParams(queryString).get('renew') === '1'}
+      />
+    ) : (
+      <AccessDenied />
+    )
   } else if (route === '/plans') {
     page = canManagePayments(profile) ? <PlansPage /> : <AccessDenied />
   } else {
