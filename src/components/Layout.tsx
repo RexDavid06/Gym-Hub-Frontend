@@ -1,5 +1,12 @@
 import { useAuth } from '../auth/useAuth'
-import { canManagePayments, canViewMembers, canViewUsers, inviteRolesFor, roleLabel } from '../lib/permissions'
+import {
+  canManagePayments,
+  canViewMembers,
+  canViewUsers,
+  inviteRolesFor,
+  isSuperAdmin,
+  roleLabel,
+} from '../lib/permissions'
 import { Link } from './Link'
 import { navigate, useRoute } from '../lib/router'
 import { Badge, Button } from './ui'
@@ -10,15 +17,23 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
   if (!profile) return null
 
-  const navItems = [
-    { to: '/', label: 'Overview', show: true },
-    { to: '/invites/new', label: 'Invite people', show: inviteRolesFor(profile).length > 0 },
-    { to: '/invites', label: 'Invites', show: profile.role === 'owner' },
-    { to: '/team', label: 'Team', show: profile.role === 'owner' },
-    { to: '/users', label: 'Users', show: canViewUsers(profile) },
-    { to: '/members', label: 'Members', show: canViewMembers(profile) },
-    { to: '/plans', label: 'Plans', show: canManagePayments(profile) },
-  ].filter((item) => item.show)
+  const superAdmin = isSuperAdmin(profile)
+  const navItems = (
+    superAdmin
+      ? [
+          { to: '/platform', label: 'Overview', show: true },
+          { to: '/platform/gyms', label: 'Gyms', show: true },
+        ]
+      : [
+          { to: '/', label: 'Overview', show: true },
+          { to: '/invites/new', label: 'Invite people', show: inviteRolesFor(profile).length > 0 },
+          { to: '/invites', label: 'Invites', show: profile.role === 'owner' },
+          { to: '/team', label: 'Team', show: profile.role === 'owner' },
+          { to: '/users', label: 'Users', show: canViewUsers(profile) },
+          { to: '/members', label: 'Members', show: canViewMembers(profile) },
+          { to: '/plans', label: 'Plans', show: canManagePayments(profile) },
+        ]
+  ).filter((item) => item.show)
 
   const isActive = (to: string) =>
     route === to || (to !== '/' && route.startsWith(`${to}/`))
@@ -32,7 +47,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-brand-background">
       <aside className="hidden border-r border-slate-200 bg-white lg:fixed lg:inset-y-0 lg:flex lg:w-64 lg:flex-col">
         <div className="border-b border-slate-200 p-6">
-          <Link to="/" className="flex items-center gap-3">
+          <Link to={superAdmin ? '/platform' : '/'} className="flex items-center gap-3">
             <span className="grid h-10 w-10 place-items-center rounded-xl bg-brand-navy font-heading text-xs font-bold text-white">
               GH
             </span>
@@ -40,7 +55,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
               <span className="block font-heading text-base font-semibold text-brand-navy">
                 Gym Hub
               </span>
-              <span className="block text-xs text-brand-muted">Gym dashboard</span>
+              <span className="block text-xs text-brand-muted">
+                {superAdmin ? 'Platform administration' : 'Gym dashboard'}
+              </span>
             </span>
           </Link>
         </div>
@@ -62,7 +79,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <div className="border-t border-slate-200 p-4">
           <div className="rounded-xl bg-slate-50 p-3.5">
             <p className="truncate text-sm font-semibold text-brand-navy">
-              {profile.gym?.name ?? 'No gym assigned'}
+              {superAdmin ? 'Platform staff' : (profile.gym?.name ?? 'No gym assigned')}
             </p>
             <p className="mt-1 truncate text-xs text-brand-muted">{profile.phone}</p>
             <Badge tone="navy">{roleLabel(profile.role)}</Badge>
@@ -76,7 +93,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <div className="lg:pl-64">
         <header className="sticky top-0 z-30 border-b border-slate-200 bg-white/95 backdrop-blur">
           <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
-            <Link to="/" className="flex items-center gap-2 lg:hidden">
+            <Link to={superAdmin ? '/platform' : '/'} className="flex items-center gap-2 lg:hidden">
               <span className="grid h-9 w-9 place-items-center rounded-xl bg-brand-navy font-heading text-xs font-bold text-white">
                 GH
               </span>
@@ -84,7 +101,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
             </Link>
             <div className="hidden min-w-0 lg:block">
               <p className="truncate font-heading text-sm font-semibold text-brand-navy">
-                {profile.gym?.name ?? 'Gym Hub'}
+                {superAdmin ? 'Platform administration' : (profile.gym?.name ?? 'Gym Hub')}
               </p>
               <p className="text-xs text-brand-muted">
                 Signed in as {profile.phone} · {roleLabel(profile.role)}

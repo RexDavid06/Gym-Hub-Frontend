@@ -1,11 +1,18 @@
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 
 import { AuthProvider } from './auth/AuthContext'
 import { useAuth } from './auth/useAuth'
 import { Layout } from './components/Layout'
 import { Button, Card, LoadingState } from './components/ui'
 import { Link } from './components/Link'
-import { canManagePayments, canViewMembers, canViewUsers, inviteRolesFor } from './lib/permissions'
+import {
+  canManagePayments,
+  canViewMemberDetail,
+  canViewMembers,
+  canViewUsers,
+  isSuperAdmin,
+  inviteRolesFor,
+} from './lib/permissions'
 import { HomePage } from './pages/HomePage'
 import { InvitePeoplePage } from './pages/InvitePeoplePage'
 import { InvitesListPage } from './pages/InvitesListPage'
@@ -17,6 +24,9 @@ import { RegisterGymPage } from './pages/RegisterGymPage'
 import { TeamPage } from './pages/TeamPage'
 import { UsersPage } from './pages/UsersPage'
 import { navigate, useRoute } from './lib/router'
+import { PlatformGymDetailPage } from './pages/PlatformGymDetailPage'
+import { PlatformGymsPage } from './pages/PlatformGymsPage'
+import { PlatformOverviewPage } from './pages/PlatformOverviewPage'
 
 function SplashScreen() {
   return (
@@ -48,66 +58,117 @@ function AccessDenied() {
   )
 }
 
+const platformRoutes = {
+  overview: '/platform',
+  gyms: '/platform/gyms',
+  gymDetail: (id: number) => `/platform/gyms/${id}`,
+}
+
+const isPlatformRouteLocal = (route: string) => {
+  const path = route.split('?')[0]
+  return path === platformRoutes.overview || path.startsWith(`${platformRoutes.overview}/`)
+}
+
+const platformGymId = (route: string) => {
+  const match = /^\/platform\/gyms\/(\d+)$/.exec(route.split('?')[0])
+  return match ? Number(match[1]) : null
+}
+
+const memberMatch = (route: string) => {
+  const match = /^\/members\/(\d+)$/.exec(route.split('?')[0])
+  return match ? Number(match[1]) : null
+}
+
 function AppRoutes() {
   const { profile, loading } = useAuth()
   const route = useRoute()
+  const [page, setPage] = useState<React.ReactNode>(null)
+  const [routePath, setRoutePath] = useState<string>('')
 
   useEffect(() => {
     if (profile && (route === '/login' || route === '/register')) navigate('/')
   }, [profile, route])
 
+  // Platform staff land on the platform overview, never the gym dashboard.
+  useEffect(() => {
+    if (profile && isSuperAdmin(profile) && !isPlatformRouteLocal(route)) {
+      navigate(platformRoutes.overview)
+    }
+  }, [profile, route])
+
+  useEffect(() => {
+    const path = route.split('?')[0]
+    setRoutePath(path)
+  }, [route])
+
+  useEffect(() => {
+    if (!profile) {
+      return
+    }
+    if (routePath === platformRoutes.overview) {
+      setPage(isSuperAdmin(profile) ? <PlatformOverviewPage /> : <AccessDenied />)
+    } else if (routePath === platformRoutes.gyms) {
+      setPage(isSuperAdmin(profile) ? <PlatformGymsPage /> : <AccessDenied />)
+    } else if (platformGymId(routePath) !== null) {
+      setPage(
+        isSuperAdmin(profile) ? (
+          <PlatformGymDetailPage gymId={Number(platformGymId(routePath))} />
+        ) : (
+          <AccessDenied />
+        ),
+      )
+    } else if (routePath === '/') {
+      setPage(isSuperAdmin(profile) ? <PlatformOverviewPage /> : <HomePage />)
+    } else if (routePath === '/invites/new') {
+      setPage(inviteRolesFor(profile).length > 0 ? <InvitePeoplePage /> : <AccessDenied />)
+    } else if (routePath === '/invites') {
+      setPage(profile.role === 'owner' ? <InvitesListPage /> : <AccessDenied />)
+    } else if (routePath === '/team') {
+      setPage(profile.role === 'owner' ? <TeamPage /> : <AccessDenied />)
+    } else if (routePath === '/users') {
+      setPage(canViewUsers(profile) ? <UsersPage /> : <AccessDenied />)
+    } else if (routePath === '/members') {
+      setPage(canViewMembers(profile) ? <MembersPage /> : <AccessDenied />)
+    } else if (memberMatch(routePath)) {
+      setPage(
+        canViewMemberDetail(profile) ? (
+          <MemberDetailPage
+            memberId={Number(memberMatch(routePath))}
+            openRenew={new URLSearchParams(route.split('?')[1] ?? '').get('renew') === '1'}
+          />
+        ) : (
+          <AccessDenied />
+        ),
+      )
+    } else if (routePath === '/plans') {
+      setPage(canManagePayments(profile) ? <PlansPage /> : <AccessDenied />)
+    } else {
+      setPage(
+        <Card className="mx-auto max-w-lg text-center">
+          <h1 className="font-heading text-2xl font-semibold text-brand-navy">
+            Page not found
+          </h1>
+          <p className="mt-2 text-sm text-brand-muted">That page does not exist.</p>
+          <Button className="mt-5" onClick={() => navigate('/')}>
+            Back to overview
+          </Button>
+        </Card>,
+      )
+    }
+  }, [profile, route, routePath])
+
   if (loading) return <SplashScreen />
 
   if (!profile) {
-    if (route === '/register') return <RegisterGymPage />
+    if (routePath === '/register') return <RegisterGymPage />
     return <LoginPage />
   }
 
-  if (route === '/login' || route === '/register') {
+  if (routePath === '/login' || routePath === '/register') {
     return (
       <Layout>
         <HomePage />
       </Layout>
-    )
-  }
-
-  const [routePath, queryString = ''] = route.split('?')
-  const memberMatch = /^\/members\/(\d+)$/.exec(routePath)
-
-  let page: React.ReactNode
-  if (route === '/') {
-    page = <HomePage />
-  } else if (route === '/invites/new') {
-    page =
-      inviteRolesFor(profile).length > 0 ? <InvitePeoplePage /> : <AccessDenied />
-  } else if (route === '/invites') {
-    page = profile.role === 'owner' ? <InvitesListPage /> : <AccessDenied />
-  } else if (route === '/team') {
-    page = profile.role === 'owner' ? <TeamPage /> : <AccessDenied />
-  } else if (route === '/users') {
-    page = canViewUsers(profile) ? <UsersPage /> : <AccessDenied />
-  } else if (route === '/members') {
-    page = canViewMembers(profile) ? <MembersPage /> : <AccessDenied />
-  } else if (memberMatch) {
-    page = canViewMembers(profile) ? (
-      <MemberDetailPage
-        memberId={Number(memberMatch[1])}
-        openRenew={new URLSearchParams(queryString).get('renew') === '1'}
-      />
-    ) : (
-      <AccessDenied />
-    )
-  } else if (route === '/plans') {
-    page = canManagePayments(profile) ? <PlansPage /> : <AccessDenied />
-  } else {
-    page = (
-      <Card className="mx-auto max-w-lg text-center">
-        <h1 className="font-heading text-2xl font-semibold text-brand-navy">Page not found</h1>
-        <p className="mt-2 text-sm text-brand-muted">That page does not exist.</p>
-        <Button className="mt-5" onClick={() => navigate('/')}>
-          Back to overview
-        </Button>
-      </Card>
     )
   }
 

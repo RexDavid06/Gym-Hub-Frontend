@@ -24,6 +24,10 @@ export function hasPermission(profile: Me, code: StaffPermissionCode) {
   return profile.role === 'owner' || profile.permission_codes.includes(code)
 }
 
+export function isSuperAdmin(profile: Me) {
+  return profile.role === 'super_admin'
+}
+
 export function canViewUsers(profile: Me) {
   return (
     profile.role === 'owner' ||
@@ -38,6 +42,10 @@ export function canViewMembers(profile: Me) {
     hasPermission(profile, 'manage_members') ||
     hasPermission(profile, 'assign_trainers')
   )
+}
+
+export function canViewMemberDetail(profile: Me) {
+  return canViewMembers(profile) || isSuperAdmin(profile) || hasPermission(profile, 'manage_payments')
 }
 
 export function canAssignTrainers(profile: Me) {
