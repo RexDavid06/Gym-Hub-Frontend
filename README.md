@@ -1,6 +1,6 @@
 # Gym Hub Web
 
-React, TypeScript, Vite, and Tailwind dashboard for gym owners, admins, and (from Phase 6) platform staff. Requires Node.js 20+ and npm.
+React, TypeScript, Vite, and Tailwind dashboard for gym owners, admins, and (from Phase 6) platform staff. Requires Node.js 22+ and npm.
 
 ```sh
 npm install
