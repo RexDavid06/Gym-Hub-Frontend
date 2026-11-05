@@ -1,5 +1,6 @@
 import { useAuth } from '../auth/useAuth'
 import {
+  canManageBranches,
   canManagePayments,
   canViewMembers,
   canViewUsers,
@@ -30,6 +31,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           { to: '/invites', label: 'Invites', show: profile.role === 'owner' },
           { to: '/team', label: 'Team', show: profile.role === 'owner' },
           { to: '/users', label: 'Users', show: canViewUsers(profile) },
+          { to: '/branches', label: 'Branches', show: canManageBranches(profile) },
           { to: '/members', label: 'Members', show: canViewMembers(profile) },
           { to: '/plans', label: 'Plans', show: canManagePayments(profile) },
         ]
@@ -81,6 +83,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
             <p className="truncate text-sm font-semibold text-brand-navy">
               {superAdmin ? 'Platform staff' : (profile.gym?.name ?? 'No gym assigned')}
             </p>
+            {profile.branch ? (
+              <p className="mt-0.5 truncate text-xs text-brand-muted">{profile.branch.name}</p>
+            ) : null}
             <p className="mt-1 truncate text-xs text-brand-muted">{profile.phone}</p>
             <Badge tone="navy">{roleLabel(profile.role)}</Badge>
           </div>
@@ -105,6 +110,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
               </p>
               <p className="text-xs text-brand-muted">
                 Signed in as {profile.phone} · {roleLabel(profile.role)}
+                {profile.branch ? ` · ${profile.branch.name}` : ''}
               </p>
             </div>
             <Button variant="secondary" className="lg:hidden" onClick={signOut}>

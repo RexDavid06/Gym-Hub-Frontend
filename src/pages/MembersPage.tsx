@@ -75,6 +75,9 @@ function MemberCard({
             </Badge>
           </div>
           <p className="mt-1 text-sm text-brand-muted">{member.phone}</p>
+          <p className="mt-1 text-sm text-brand-text">
+            Branch: <span className="font-semibold">{member.branch?.name || 'Not assigned'}</span>
+          </p>
           <Link
             to={`/members/${member.id}`}
             className="mt-2 inline-flex min-h-11 items-center text-sm font-semibold text-brand-navy-light hover:underline"

@@ -16,6 +16,7 @@ function profile(role: string, permissionCodes: string[] = []): Me {
     role,
     permission_codes: permissionCodes,
     gym: null,
+    branch: null,
   }
 }
 

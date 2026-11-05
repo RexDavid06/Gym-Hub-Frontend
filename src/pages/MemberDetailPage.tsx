@@ -240,6 +240,10 @@ export function MemberDetailPage({
                   {member.name || 'Unnamed member'}
                 </h2>
                 <p className="mt-1 text-sm text-brand-muted">{member.phone}</p>
+                <p className="mt-1 text-sm text-brand-text">
+                  Branch:{' '}
+                  <span className="font-semibold">{member.branch?.name || 'Not assigned'}</span>
+                </p>
               </div>
               <Badge tone={member.is_active === false ? 'danger' : 'success'}>
                 {member.is_active === false ? 'Inactive' : 'Active'}

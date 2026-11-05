@@ -1,5 +1,12 @@
 import { useAuth } from '../auth/useAuth'
-import { canViewMembers, canViewUsers, inviteRolesFor, roleLabel, staffPermissions } from '../lib/permissions'
+import {
+  canManageBranches,
+  canViewMembers,
+  canViewUsers,
+  inviteRolesFor,
+  roleLabel,
+  staffPermissions,
+} from '../lib/permissions'
 import { Link } from '../components/Link'
 import { MembershipDashboard } from '../components/MembershipDashboard'
 import { Badge, Card, PageHeader } from '../components/ui'
@@ -33,8 +40,14 @@ export function HomePage() {
     {
       to: '/users',
       title: 'Users',
-      description: 'Filter the people in your gym by role.',
+      description: 'Filter the people in your gym by role and assign them to a branch.',
       show: canViewUsers(profile),
+    },
+    {
+      to: '/branches',
+      title: 'Branches',
+      description: 'Create the locations your gym operates and keep them up to date.',
+      show: canManageBranches(profile),
     },
     {
       to: '/members',
@@ -64,6 +77,7 @@ export function HomePage() {
             <h2 className="mt-2 font-heading text-2xl font-semibold">{profile.name || profile.phone}</h2>
             <p className="mt-1 text-sm text-blue-100">
               Signed in as {roleLabel(profile.role)}
+              {profile.branch ? ` · ${profile.branch.name}` : ''}
             </p>
           </div>
           <div className="rounded-xl bg-white/10 px-4 py-3 text-sm">

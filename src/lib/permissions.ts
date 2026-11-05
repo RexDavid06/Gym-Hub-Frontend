@@ -56,6 +56,22 @@ export function canManagePayments(profile: Me) {
   return hasPermission(profile, 'manage_payments')
 }
 
+export function canViewBranches(profile: Me) {
+  return profile.role === 'owner' || profile.role === 'admin'
+}
+
+export function canManageBranches(profile: Me) {
+  return profile.role === 'owner'
+}
+
+export function canAssignBranch(profile: Me, targetRole: UserRole) {
+  if (profile.role === 'owner') return true
+  if (profile.role !== 'admin') return false
+  if (targetRole === 'member') return hasPermission(profile, 'manage_members')
+  if (targetRole === 'trainer') return hasPermission(profile, 'manage_trainers')
+  return false
+}
+
 export function inviteRolesFor(profile: Me): InviteRole[] {
   if (profile.role === 'owner') return ['admin', 'trainer', 'member']
   const roles: InviteRole[] = []

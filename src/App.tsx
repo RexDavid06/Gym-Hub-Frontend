@@ -6,6 +6,7 @@ import { Layout } from './components/Layout'
 import { Button, Card, LoadingState } from './components/ui'
 import { Link } from './components/Link'
 import {
+  canManageBranches,
   canManagePayments,
   canViewMemberDetail,
   canViewMembers,
@@ -13,6 +14,7 @@ import {
   isSuperAdmin,
   inviteRolesFor,
 } from './lib/permissions'
+import { BranchesPage } from './pages/BranchesPage'
 import { HomePage } from './pages/HomePage'
 import { InvitePeoplePage } from './pages/InvitePeoplePage'
 import { InvitesListPage } from './pages/InvitesListPage'
@@ -127,6 +129,8 @@ function AppRoutes() {
       setPage(profile.role === 'owner' ? <TeamPage /> : <AccessDenied />)
     } else if (routePath === '/users') {
       setPage(canViewUsers(profile) ? <UsersPage /> : <AccessDenied />)
+    } else if (routePath === '/branches') {
+      setPage(canManageBranches(profile) ? <BranchesPage /> : <AccessDenied />)
     } else if (routePath === '/members') {
       setPage(canViewMembers(profile) ? <MembersPage /> : <AccessDenied />)
     } else if (memberMatch(routePath)) {

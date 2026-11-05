@@ -33,6 +33,8 @@ TODO: move the refresh token to a secure, httpOnly cookie with CSRF protection b
 - Owner invite history.
 - Owner team management: admin list, staff permission switches, and deactivate confirmation.
 - Gym users list with a server-side role filter.
+- Branch management: owners create, edit, and delete branches with per-gym unique names.
+- Branch assignment: owners and permitted admins assign staff and members to a branch from the users list.
 - Member assignment: assign or unassign each member to a trainer.
 - Membership plans: create, edit, deactivate, and reactivate.
 - Member membership: assign or renew a plan.
@@ -44,7 +46,7 @@ TODO: move the refresh token to a secure, httpOnly cookie with CSRF protection b
 
 ## Tests
 
-Vitest and React Testing Library cover permission predicates, platform route guards, and the payment-only member-detail access path. Run them with `npm run test:run` (or `npm test` for watch mode). The web CI workflow runs lint, typecheck, tests, and build.
+Vitest and React Testing Library cover permission predicates, platform route guards, branch management/assignment, and the payment-only member-detail access path. Run them with `npm run test:run` (or `npm test` for watch mode). The web CI workflow runs lint, typecheck, tests, and build.
 
 ## Current limitations
 

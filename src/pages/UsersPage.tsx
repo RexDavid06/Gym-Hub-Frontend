@@ -1,13 +1,25 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { apiFetch, buildApiPath } from '../api/client'
-import type { UserList, UserRole } from '../api/types'
+import type { Branch, UserList, UserRole } from '../api/types'
 import { useAuth } from '../auth/useAuth'
 import { ConfirmDialog } from '../components/ConfirmDialog'
 import { Link } from '../components/Link'
-import { Badge, Button, Card, EmptyState, ErrorState, LoadingState, PageHeader } from '../components/ui'
+import {
+  Badge,
+  Button,
+  Card,
+  EmptyState,
+  ErrorState,
+  LoadingState,
+  PageHeader,
+} from '../components/ui'
 import { formatDate, formatRole } from '../lib/format'
-import { userRoleFiltersFor } from '../lib/permissions'
+import {
+  canAssignBranch,
+  canViewBranches,
+  userRoleFiltersFor,
+} from '../lib/permissions'
 
 const roleTones = {
   owner: 'navy',
@@ -17,31 +29,104 @@ const roleTones = {
   super_admin: 'danger',
 } as const
 
+function UserBranchSelect({
+  user,
+  branches,
+  onUpdated,
+}: {
+  user: UserList
+  branches: Branch[]
+  onUpdated: (user: UserList) => void
+}) {
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState('')
+
+  const assign = async (value: string) => {
+    setBusy(true)
+    setError('')
+    try {
+      const updated = await apiFetch(
+        buildApiPath('/api/users/{user_id}/branch/', { user_id: user.id }),
+        'put',
+        { body: { branch_id: value ? Number(value) : null } },
+      )
+      onUpdated(updated)
+    } catch (caught) {
+      setError(
+        caught instanceof Error
+          ? caught.message
+          : 'Unable to update this branch.',
+      )
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div>
+      <label className="sr-only" htmlFor={`branch-${user.id}`}>
+        Branch for {user.name || user.phone}
+      </label>
+      <select
+        id={`branch-${user.id}`}
+        value={user.branch?.id ? String(user.branch.id) : ''}
+        onChange={(event) => void assign(event.target.value)}
+        disabled={busy}
+        className="min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm text-brand-text outline-none focus:border-brand-navy-light focus:ring-2 focus:ring-brand-navy-light/20 disabled:opacity-60"
+      >
+        <option value="">No branch</option>
+        {branches.map((branch) => (
+          <option key={branch.id} value={branch.id}>
+            {branch.name}
+          </option>
+        ))}
+      </select>
+      {error ? (
+        <p role="alert" className="mt-1 text-xs text-brand-danger">
+          {error}
+        </p>
+      ) : null}
+    </div>
+  )
+}
+
 export function UsersPage() {
   const { profile } = useAuth()
   const [filter, setFilter] = useState<UserRole | 'all'>('all')
   const [users, setUsers] = useState<UserList[]>([])
+  const [branches, setBranches] = useState<Branch[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [actionError, setActionError] = useState('')
   const [target, setTarget] = useState<UserList | null>(null)
   const [deactivating, setDeactivating] = useState(false)
+  const canLoadBranches = profile ? canViewBranches(profile) : false
 
-  const load = useCallback(async (role: UserRole | 'all') => {
-    setLoading(true)
-    setError('')
-    try {
-      setUsers(
-        await apiFetch('/api/users/', 'get', {
-          query: role === 'all' ? undefined : { role },
-        }),
-      )
-    } catch (caught) {
-      setError(caught instanceof Error ? caught.message : 'Unable to load users.')
-    } finally {
-      setLoading(false)
-    }
-  }, [])
+  const load = useCallback(
+    async (role: UserRole | 'all') => {
+      setLoading(true)
+      setError('')
+      try {
+        const [userRows, branchRows] = await Promise.all([
+          apiFetch('/api/users/', 'get', {
+            query: role === 'all' ? undefined : { role },
+          }),
+          canLoadBranches
+            ? apiFetch('/api/branches/', 'get')
+            : Promise.resolve([]),
+        ])
+        setUsers(userRows)
+        setBranches(branchRows)
+      } catch (caught) {
+        setError(
+          caught instanceof Error ? caught.message : 'Unable to load users.',
+        )
+      } finally {
+        setLoading(false)
+      }
+    },
+    [canLoadBranches],
+  )
 
   useEffect(() => {
     void load(filter)
@@ -53,16 +138,30 @@ export function UsersPage() {
     setActionError('')
     try {
       const updated = await apiFetch(
-        buildApiPath('/api/users/{user_id}/deactivate/', { user_id: target.id }),
+        buildApiPath('/api/users/{user_id}/deactivate/', {
+          user_id: target.id,
+        }),
         'post',
       )
-      setUsers((current) => current.map((user) => (user.id === updated.id ? updated : user)))
+      setUsers((current) =>
+        current.map((user) => (user.id === updated.id ? updated : user)),
+      )
       setTarget(null)
     } catch (caught) {
-      setActionError(caught instanceof Error ? caught.message : 'Unable to deactivate this user.')
+      setActionError(
+        caught instanceof Error
+          ? caught.message
+          : 'Unable to deactivate this user.',
+      )
     } finally {
       setDeactivating(false)
     }
+  }
+
+  const updateUserBranch = (updated: UserList) => {
+    setUsers((current) =>
+      current.map((user) => (user.id === updated.id ? updated : user)),
+    )
   }
 
   if (!profile) return null
@@ -75,20 +174,29 @@ export function UsersPage() {
         title="Users"
         description="Everyone in your gym, filtered by role. Access is enforced by the API."
         action={
-          <Button variant="secondary" onClick={() => void load(filter)} disabled={loading}>
+          <Button
+            variant="secondary"
+            onClick={() => void load(filter)}
+            disabled={loading}
+          >
             Refresh
           </Button>
         }
       />
 
       <Card>
-        <label htmlFor="role-filter" className="mb-1.5 block text-sm font-semibold text-brand-text">
+        <label
+          htmlFor="role-filter"
+          className="mb-1.5 block text-sm font-semibold text-brand-text"
+        >
           Filter by role
         </label>
         <select
           id="role-filter"
           value={filter}
-          onChange={(event) => setFilter(event.target.value as UserRole | 'all')}
+          onChange={(event) =>
+            setFilter(event.target.value as UserRole | 'all')
+          }
           className="min-h-12 w-full rounded-xl border border-slate-300 bg-white px-3.5 text-sm text-brand-text outline-none focus:border-brand-navy-light focus:ring-2 focus:ring-brand-navy-light/20 sm:max-w-xs"
         >
           {filters.map((option) => (
@@ -100,12 +208,17 @@ export function UsersPage() {
       </Card>
 
       {actionError ? (
-        <p role="alert" className="rounded-xl bg-red-50 p-3 text-sm text-red-800">
+        <p
+          role="alert"
+          className="rounded-xl bg-red-50 p-3 text-sm text-red-800"
+        >
           {actionError}
         </p>
       ) : null}
       {loading ? <LoadingState label="Loading users…" /> : null}
-      {!loading && error ? <ErrorState message={error} onRetry={() => void load(filter)} /> : null}
+      {!loading && error ? (
+        <ErrorState message={error} onRetry={() => void load(filter)} />
+      ) : null}
       {!loading && !error && users.length === 0 ? (
         <EmptyState
           title="No users found"
@@ -125,15 +238,21 @@ export function UsersPage() {
                 <tr>
                   <th className="px-5 py-3 font-semibold">Person</th>
                   <th className="px-5 py-3 font-semibold">Role</th>
+                  <th className="px-5 py-3 font-semibold">Branch</th>
                   <th className="px-5 py-3 font-semibold">Status</th>
                   <th className="px-5 py-3 font-semibold">Joined</th>
-                  {canDeactivate ? <th className="px-5 py-3 text-right font-semibold">Actions</th> : null}
+                  {canDeactivate ? (
+                    <th className="px-5 py-3 text-right font-semibold">
+                      Actions
+                    </th>
+                  ) : null}
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
                 {users.map((user) => {
                   const isActive = user.is_active !== false
-                  const canAct = canDeactivate && isActive && user.role !== 'owner'
+                  const canAct =
+                    canDeactivate && isActive && user.role !== 'owner'
                   return (
                     <tr key={user.id}>
                       <td className="px-5 py-4">
@@ -145,7 +264,9 @@ export function UsersPage() {
                             {user.name || 'Unnamed'}
                           </Link>
                         ) : (
-                          <p className="font-semibold text-brand-navy">{user.name || 'Unnamed'}</p>
+                          <p className="font-semibold text-brand-navy">
+                            {user.name || 'Unnamed'}
+                          </p>
                         )}
                         <p className="text-xs text-brand-muted">{user.phone}</p>
                       </td>
@@ -155,15 +276,33 @@ export function UsersPage() {
                         </Badge>
                       </td>
                       <td className="px-5 py-4">
+                        {canAssignBranch(profile, user.role ?? 'member') ? (
+                          <UserBranchSelect
+                            user={user}
+                            branches={branches}
+                            onUpdated={updateUserBranch}
+                          />
+                        ) : (
+                          <span className="text-brand-muted">
+                            {user.branch?.name ?? '—'}
+                          </span>
+                        )}
+                      </td>
+                      <td className="px-5 py-4">
                         <Badge tone={isActive ? 'success' : 'danger'}>
                           {isActive ? 'Active' : 'Inactive'}
                         </Badge>
                       </td>
-                      <td className="px-5 py-4 text-brand-muted">{formatDate(user.date_joined)}</td>
+                      <td className="px-5 py-4 text-brand-muted">
+                        {formatDate(user.date_joined)}
+                      </td>
                       {canDeactivate ? (
                         <td className="px-5 py-4 text-right">
                           {canAct ? (
-                            <Button variant="secondary" onClick={() => setTarget(user)}>
+                            <Button
+                              variant="secondary"
+                              onClick={() => setTarget(user)}
+                            >
                               Deactivate
                             </Button>
                           ) : (
@@ -200,19 +339,42 @@ export function UsersPage() {
                       )}
                       <p className="text-sm text-brand-muted">{user.phone}</p>
                     </div>
-                    <Badge tone={roleTones[user.role ?? 'member']}>{formatRole(user.role)}</Badge>
+                    <Badge tone={roleTones[user.role ?? 'member']}>
+                      {formatRole(user.role)}
+                    </Badge>
                   </div>
                   <div className="mt-3 flex items-center justify-between gap-3">
                     <Badge tone={isActive ? 'success' : 'danger'}>
                       {isActive ? 'Active' : 'Inactive'}
                     </Badge>
                     {canAct ? (
-                      <Button variant="secondary" onClick={() => setTarget(user)}>
+                      <Button
+                        variant="secondary"
+                        onClick={() => setTarget(user)}
+                      >
                         Deactivate
                       </Button>
                     ) : null}
                   </div>
-                  <p className="mt-3 text-xs text-brand-muted">Joined {formatDate(user.date_joined)}</p>
+                  <div className="mt-3">
+                    <p className="mb-1 text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                      Branch
+                    </p>
+                    {canAssignBranch(profile, user.role ?? 'member') ? (
+                      <UserBranchSelect
+                        user={user}
+                        branches={branches}
+                        onUpdated={updateUserBranch}
+                      />
+                    ) : (
+                      <p className="text-sm text-brand-text">
+                        {user.branch?.name ?? 'No branch'}
+                      </p>
+                    )}
+                  </div>
+                  <p className="mt-3 text-xs text-brand-muted">
+                    Joined {formatDate(user.date_joined)}
+                  </p>
                 </Card>
               )
             })}
