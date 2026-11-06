@@ -7,9 +7,11 @@ import { Button, Card, LoadingState } from './components/ui'
 import { Link } from './components/Link'
 import {
   canManageBranches,
+  canManageNotificationSettings,
   canManagePayments,
   canViewMemberDetail,
   canViewMembers,
+  canViewNotifications,
   canViewUsers,
   isSuperAdmin,
   inviteRolesFor,
@@ -21,6 +23,8 @@ import { InvitesListPage } from './pages/InvitesListPage'
 import { LoginPage } from './pages/LoginPage'
 import { MemberDetailPage } from './pages/MemberDetailPage'
 import { MembersPage } from './pages/MembersPage'
+import { NotificationsPage } from './pages/NotificationsPage'
+import { NotificationSettingsPage } from './pages/NotificationSettingsPage'
 import { PlansPage } from './pages/PlansPage'
 import { RegisterGymPage } from './pages/RegisterGymPage'
 import { TeamPage } from './pages/TeamPage'
@@ -146,6 +150,12 @@ function AppRoutes() {
       )
     } else if (routePath === '/plans') {
       setPage(canManagePayments(profile) ? <PlansPage /> : <AccessDenied />)
+    } else if (routePath === '/notifications') {
+      setPage(canViewNotifications(profile) ? <NotificationsPage /> : <AccessDenied />)
+    } else if (routePath === '/settings/notifications') {
+      setPage(
+        canManageNotificationSettings(profile) ? <NotificationSettingsPage /> : <AccessDenied />,
+      )
     } else {
       setPage(
         <Card className="mx-auto max-w-lg text-center">

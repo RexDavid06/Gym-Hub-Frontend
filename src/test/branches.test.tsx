@@ -13,6 +13,7 @@ const ownerProfile: Me = {
   permission_codes: [],
   gym: { id: 1, name: 'Owner Gym' },
   branch: null,
+  whatsapp_opt_in: false,
 }
 
 const adminProfile: Me = {
@@ -23,6 +24,7 @@ const adminProfile: Me = {
   permission_codes: ['manage_payments'],
   gym: { id: 1, name: 'Admin Gym' },
   branch: null,
+  whatsapp_opt_in: false,
 }
 
 const member = {
@@ -36,6 +38,7 @@ const member = {
   date_joined: '2026-01-01T00:00:00Z',
   permission_codes: [],
   assigned_trainer: null,
+  whatsapp_opt_in: false,
 }
 
 const mainBranch = {

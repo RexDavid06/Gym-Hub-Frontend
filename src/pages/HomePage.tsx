@@ -1,7 +1,9 @@
 import { useAuth } from '../auth/useAuth'
 import {
   canManageBranches,
+  canManageNotificationSettings,
   canViewMembers,
+  canViewNotifications,
   canViewUsers,
   inviteRolesFor,
   roleLabel,
@@ -54,6 +56,18 @@ export function HomePage() {
       title: 'Members',
       description: 'Assign members to trainers so trainers know who they support.',
       show: canViewMembers(profile),
+    },
+    {
+      to: '/notifications',
+      title: 'Notifications',
+      description: 'Review SMS and WhatsApp reminder and receipt delivery history.',
+      show: canViewNotifications(profile),
+    },
+    {
+      to: '/settings/notifications',
+      title: 'Notification settings',
+      description: 'Choose which SMS and WhatsApp messages your gym sends.',
+      show: canManageNotificationSettings(profile),
     },
   ].filter((link) => link.show)
 

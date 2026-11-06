@@ -42,14 +42,18 @@ TODO: move the refresh token to a secure, httpOnly cookie with CSRF protection b
 - Dashboard alerts for memberships expiring within 7 days and expired memberships.
 - Payment-only admins can open member detail, record payments, print receipts, and void payments without gaining member-list or trainer-assignment controls.
 - Platform administration for `super_admin`: `/platform` summary, searchable/filterable `/platform/gyms`, and `/platform/gyms/:id` with suspend/reactivate dialogs.
+- Owner notification settings at `/settings/notifications`: separate SMS/WhatsApp reminder and receipt toggles, provider availability, and disabled-channel protection.
+- Owner/admin notification history at `/notifications`: event, status, channel, and schedule filters, pagination, delivery details, and owner-only retry for failed messages.
+- Member WhatsApp opt-in control on member detail for owners and admins with `manage_members`.
 - Loading, empty, and error states throughout, with permission-aware navigation. All authorization is still enforced by the backend API.
 
 ## Tests
 
-Vitest and React Testing Library cover permission predicates, platform route guards, branch management/assignment, and the payment-only member-detail access path. Run them with `npm run test:run` (or `npm test` for watch mode). The web CI workflow runs lint, typecheck, tests, and build.
+Vitest and React Testing Library cover permission predicates, platform route guards, branch management/assignment, notification settings/history/retry, the member WhatsApp opt-in, and the payment-only member-detail access path. Run them with `npm run test:run` (or `npm test` for watch mode). The web CI workflow runs lint, typecheck, tests, and build.
 
 ## Current limitations
 
 - The shared `packages/api-client` package is not used; the app keeps its own generated schema and typed fetch wrapper.
+- Notifications are delivered outside the app by SMS or WhatsApp. There is no in-app notification inbox.
 
 Brand colors and fonts are defined in `tailwind.config.js`; `VITE_API_BASE_URL` points at the API origin with no path suffix (default `http://127.0.0.1:8000`). The client appends the `/api/...` path itself, so a value ending in `/api` would produce `/api/api/...` requests.

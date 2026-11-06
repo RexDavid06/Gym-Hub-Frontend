@@ -64,6 +64,25 @@ export function canManageBranches(profile: Me) {
   return profile.role === 'owner'
 }
 
+export function canViewNotifications(profile: Me) {
+  return profile.role === 'owner' || profile.role === 'admin'
+}
+
+export function canRetryNotifications(profile: Me) {
+  return profile.role === 'owner'
+}
+
+export function canManageNotificationSettings(profile: Me) {
+  return profile.role === 'owner'
+}
+
+export function canManageNotificationPreference(profile: Me) {
+  return (
+    profile.role === 'owner' ||
+    (profile.role === 'admin' && hasPermission(profile, 'manage_members'))
+  )
+}
+
 export function canAssignBranch(profile: Me, targetRole: UserRole) {
   if (profile.role === 'owner') return true
   if (profile.role !== 'admin') return false

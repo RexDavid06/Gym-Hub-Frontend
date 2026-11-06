@@ -17,6 +17,7 @@ function profile(role: string, permissionCodes: string[] = []): Me {
     permission_codes: permissionCodes,
     gym: null,
     branch: null,
+    whatsapp_opt_in: false,
   }
 }
 

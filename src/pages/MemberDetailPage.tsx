@@ -5,6 +5,7 @@ import type {
   MembershipPayment,
   MembershipPlan,
   MembershipSubscription,
+  NotificationPreference,
   UserList,
 } from '../api/types'
 import { useAuth } from '../auth/useAuth'
@@ -24,7 +25,7 @@ import {
 import { formatDay } from '../lib/format'
 import { subscriptionTone, toneBadge, toneLabel } from '../lib/memberships'
 import { formatNaira, isPositiveAmount, toDecimalString } from '../lib/money'
-import { canManagePayments } from '../lib/permissions'
+import { canManageNotificationPreference, canManagePayments } from '../lib/permissions'
 
 const paymentMethods = [
   { value: 'cash', label: 'Cash' },
@@ -47,6 +48,7 @@ export function MemberDetailPage({
 }) {
   const { profile } = useAuth()
   const canManage = profile ? canManagePayments(profile) : false
+  const canManagePreference = profile ? canManageNotificationPreference(profile) : false
 
   const [member, setMember] = useState<UserList | null>(null)
   const [subscription, setSubscription] = useState<MembershipSubscription | null>(null)
@@ -71,6 +73,11 @@ export function MemberDetailPage({
   const [voidBusy, setVoidBusy] = useState(false)
   const [voidError, setVoidError] = useState('')
 
+  const [whatsappOptIn, setWhatsappOptIn] = useState(false)
+  const [preferenceLoading, setPreferenceLoading] = useState(false)
+  const [preferenceSaving, setPreferenceSaving] = useState(false)
+  const [preferenceError, setPreferenceError] = useState('')
+
   const load = useCallback(async () => {
     setLoading(true)
     setError('')
@@ -82,6 +89,9 @@ export function MemberDetailPage({
     setVoidTarget(null)
     setActionError('')
     setPaymentError('')
+    setWhatsappOptIn(false)
+    setPreferenceError('')
+    setPreferenceLoading(canManagePreference)
     try {
       const members = await apiFetch('/api/users/', 'get', { query: { role: 'member' } })
       const found = members.find((row) => row.id === memberId)
@@ -90,6 +100,24 @@ export function MemberDetailPage({
         return
       }
       setMember(found)
+
+      if (canManagePreference) {
+        try {
+          const preference = await apiFetch(
+            buildApiPath('/api/users/{user_id}/notification-preference/', { user_id: memberId }),
+            'get',
+          )
+          setWhatsappOptIn(preference.whatsapp_opt_in)
+        } catch (caught) {
+          setPreferenceError(
+            caught instanceof Error
+              ? caught.message
+              : 'Unable to load this member’s WhatsApp preference.',
+          )
+        } finally {
+          setPreferenceLoading(false)
+        }
+      }
 
       if (canManage) {
         const [memberships, planRows, paymentRows] = await Promise.all([
@@ -109,8 +137,9 @@ export function MemberDetailPage({
       )
     } finally {
       setLoading(false)
+      setPreferenceLoading(false)
     }
-  }, [canManage, memberId])
+  }, [canManage, canManagePreference, memberId])
 
   useEffect(() => {
     void load()
@@ -190,6 +219,30 @@ export function MemberDetailPage({
     }
   }
 
+  const updateWhatsappOptIn = async (checked: boolean) => {
+    const previous = whatsappOptIn
+    setWhatsappOptIn(checked)
+    setPreferenceSaving(true)
+    setPreferenceError('')
+    try {
+      const result: NotificationPreference = await apiFetch(
+        buildApiPath('/api/users/{user_id}/notification-preference/', { user_id: memberId }),
+        'put',
+        { body: { whatsapp_opt_in: checked } },
+      )
+      setWhatsappOptIn(result.whatsapp_opt_in)
+    } catch (caught) {
+      setWhatsappOptIn(previous)
+      setPreferenceError(
+        caught instanceof Error
+          ? caught.message
+          : 'Unable to update this member’s WhatsApp preference.',
+      )
+    } finally {
+      setPreferenceSaving(false)
+    }
+  }
+
   const voidPayment = async (reason: string) => {
     if (!voidTarget) return
     setVoidBusy(true)
@@ -250,6 +303,45 @@ export function MemberDetailPage({
               </Badge>
             </div>
           </Card>
+
+          {canManagePreference ? (
+            <Card>
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <h2 className="font-heading text-lg font-semibold text-brand-navy">
+                    WhatsApp notifications
+                  </h2>
+                  <p className="mt-2 max-w-2xl text-sm text-brand-muted">
+                    This member receives WhatsApp messages only when they opt in and the gym has
+                    WhatsApp notifications enabled.
+                  </p>
+                </div>
+                {preferenceLoading ? (
+                  <span className="text-sm text-brand-muted">Loading preference…</span>
+                ) : (
+                  <label
+                    htmlFor="member-whatsapp-opt-in"
+                    className="flex items-center gap-2 text-sm font-semibold text-brand-text"
+                  >
+                    <input
+                      id="member-whatsapp-opt-in"
+                      type="checkbox"
+                      checked={whatsappOptIn}
+                      disabled={preferenceSaving}
+                      onChange={(event) => void updateWhatsappOptIn(event.target.checked)}
+                      className="h-5 w-5 rounded border-slate-300 text-brand-orange accent-brand-orange disabled:opacity-50"
+                    />
+                    WhatsApp opt-in
+                  </label>
+                )}
+              </div>
+              {preferenceError ? (
+                <p role="alert" className="mt-3 text-sm text-brand-danger">
+                  {preferenceError}
+                </p>
+              ) : null}
+            </Card>
+          ) : null}
 
           {!canManage ? (
             <Card>

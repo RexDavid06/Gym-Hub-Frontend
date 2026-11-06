@@ -1,8 +1,10 @@
 import { useAuth } from '../auth/useAuth'
 import {
   canManageBranches,
+  canManageNotificationSettings,
   canManagePayments,
   canViewMembers,
+  canViewNotifications,
   canViewUsers,
   inviteRolesFor,
   isSuperAdmin,
@@ -34,6 +36,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
           { to: '/branches', label: 'Branches', show: canManageBranches(profile) },
           { to: '/members', label: 'Members', show: canViewMembers(profile) },
           { to: '/plans', label: 'Plans', show: canManagePayments(profile) },
+          { to: '/notifications', label: 'Notifications', show: canViewNotifications(profile) },
+          {
+            to: '/settings/notifications',
+            label: 'Notification settings',
+            show: canManageNotificationSettings(profile),
+          },
         ]
   ).filter((item) => item.show)
 
