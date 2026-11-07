@@ -5,7 +5,6 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "gen:api": "openapi-typescript ./schema.yml -o src/api/schema.d.ts",
     "build": "tsc -b && vite build",
     "typecheck": "tsc -b",
     "lint": "eslint .",
@@ -14,6 +13,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
+    "@gym-hub/api-client": "file:../packages/api-client",
     "@vitejs/plugin-react": "^4.3.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
@@ -32,7 +32,6 @@
     "eslint-plugin-react-refresh": "^0.4.18",
     "globals": "^15.14.0",
     "jsdom": "^30.1.3",
-    "openapi-typescript": "^7.13.0",
     "postcss": "^8.5.3",
     "prettier": "^3.5.3",
     "tailwindcss": "^3.4.17",

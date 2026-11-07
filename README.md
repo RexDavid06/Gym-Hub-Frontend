@@ -5,7 +5,6 @@ React, TypeScript, Vite, and Tailwind dashboard for gym owners, admins, and (fro
 ```sh
 npm install
 cp .env.example .env.local
-npm run gen:api
 npm run dev
 ```
 
@@ -18,7 +17,7 @@ npm run test:run
 npm run build
 ```
 
-`npm run gen:api` regenerates `src/api/schema.d.ts` from the committed `schema.yml` with `openapi-typescript`. Do not hand-write endpoint types; use the generated schema with the typed wrapper in `src/api/client.ts`.
+API types and the typed fetch wrapper come from the shared `@gym-hub/api-client` package, hosted in the backend repository's `api-client/` directory. Do not hand-write endpoint types. `src/api/client.ts` is a thin adapter that supplies `VITE_API_BASE_URL` and the auth refresh handler. Build the package before typechecking, testing, or building the app; CI stages and builds it automatically.
 
 ## Authentication
 
@@ -53,7 +52,6 @@ Vitest and React Testing Library cover permission predicates, platform route gua
 
 ## Current limitations
 
-- The shared `packages/api-client` package is not used; the app keeps its own generated schema and typed fetch wrapper.
 - Notifications are delivered outside the app by SMS or WhatsApp. There is no in-app notification inbox.
 
 Brand colors and fonts are defined in `tailwind.config.js`; `VITE_API_BASE_URL` points at the API origin with no path suffix (default `http://127.0.0.1:8000`). The client appends the `/api/...` path itself, so a value ending in `/api` would produce `/api/api/...` requests.
