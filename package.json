@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
+    "build:render": "bash render-build.sh",
+    "prepare:api-client": "node scripts/prepare-api-client.mjs",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "test": "vitest",
@@ -13,7 +15,7 @@
     "format": "prettier --write ."
   },
   "dependencies": {
-    "@gym-hub/api-client": "file:../packages/api-client",
+    "@gym-hub/api-client": "file:.render/api-client",
     "@vitejs/plugin-react": "^4.3.4",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",

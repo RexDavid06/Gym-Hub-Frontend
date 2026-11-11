@@ -15,12 +15,13 @@ jobs:
         with:
           node-version: "22"
           cache: npm
-      - name: Stage and build the shared API client
+      - name: Stage the shared API client
+        run: npm run prepare:api-client
+        env:
+          API_CLIENT_SOURCE: backend-src/api-client
+      - name: Build the shared API client
         run: |
-          mkdir -p ../packages
-          rm -rf ../packages/api-client
-          cp -r backend-src/api-client ../packages/api-client
-          cd ../packages/api-client
+          cd .render/api-client
           npm ci
           npm run build
       - name: Guard against local schema copies
