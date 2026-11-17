@@ -6,13 +6,7 @@ if [ -z "${VITE_API_BASE_URL:-}" ]; then
   exit 1
 fi
 
-node scripts/prepare-api-client.mjs
-
-(
-  cd .render/api-client
-  npm ci --no-audit --no-fund
-  npm run build
-)
+node scripts/prepare-api-client.mjs --force
 
 npm ci --no-audit --no-fund
 npm run build

@@ -1,9 +1,18 @@
+import { execFileSync } from 'node:child_process'
 import { cpSync, existsSync, mkdirSync, rmSync, writeFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 
 const REPO = 'RexDavid06/Gym-Hub-Backend-'
 const REF = process.env.API_CLIENT_REF || 'main'
 const DEST = resolve('.render/api-client')
+
+if (
+  !process.argv.includes('--force') &&
+  existsSync(resolve(DEST, 'dist/index.d.ts'))
+) {
+  console.log(`@gym-hub/api-client already staged and built at ${DEST}`)
+  process.exit(0)
+}
 
 const FILES = [
   'package.json',
@@ -49,4 +58,8 @@ if (local) {
   }
 }
 
-console.log(`@gym-hub/api-client staged at ${DEST}`)
+const npm = process.platform === 'win32' ? 'npm.cmd' : 'npm'
+execFileSync(npm, ['ci', '--no-audit', '--no-fund'], { cwd: DEST, stdio: 'inherit' })
+execFileSync(npm, ['run', 'build'], { cwd: DEST, stdio: 'inherit' })
+
+console.log(`@gym-hub/api-client staged and built at ${DEST}`)

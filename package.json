@@ -5,9 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "preinstall": "node scripts/prepare-api-client.mjs",
     "build": "tsc -b && vite build",
     "build:render": "bash render-build.sh",
-    "prepare:api-client": "node scripts/prepare-api-client.mjs",
+    "prepare:api-client": "node scripts/prepare-api-client.mjs --force",
     "typecheck": "tsc -b",
     "lint": "eslint .",
     "test": "vitest",
