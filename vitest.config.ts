@@ -5,6 +5,8 @@ import path from 'path'
 export default defineConfig({
   plugins: [react()],
   test: {
+    pool: 'threads',
+    fileParallelism: false,
     environment: 'jsdom',
     setupFiles: [path.resolve(__dirname, 'src/test/setup.ts')],
     globals: true,

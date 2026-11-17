@@ -3,6 +3,7 @@ import {
   canManageBranches,
   canManageNotificationSettings,
   canManagePayments,
+  canViewBilling,
   canViewMembers,
   canViewNotifications,
   canViewUsers,
@@ -26,6 +27,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
       ? [
           { to: '/platform', label: 'Overview', show: true },
           { to: '/platform/gyms', label: 'Gyms', show: true },
+          { to: '/platform/billing', label: 'Billing', show: true },
         ]
       : [
           { to: '/', label: 'Overview', show: true },
@@ -36,6 +38,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
           { to: '/branches', label: 'Branches', show: canManageBranches(profile) },
           { to: '/members', label: 'Members', show: canViewMembers(profile) },
           { to: '/plans', label: 'Plans', show: canManagePayments(profile) },
+          { to: '/billing', label: 'Billing', show: canViewBilling(profile) },
           { to: '/notifications', label: 'Notifications', show: canViewNotifications(profile) },
           {
             to: '/settings/notifications',

@@ -10,6 +10,7 @@ import {
   canManageNotificationSettings,
   canManagePayments,
   canViewMemberDetail,
+  canViewBilling,
   canViewMembers,
   canViewNotifications,
   canViewUsers,
@@ -33,6 +34,13 @@ import { navigate, useRoute } from './lib/router'
 import { PlatformGymDetailPage } from './pages/PlatformGymDetailPage'
 import { PlatformGymsPage } from './pages/PlatformGymsPage'
 import { PlatformOverviewPage } from './pages/PlatformOverviewPage'
+import { PlatformBillingPage } from './pages/PlatformBillingPage'
+import { PlatformBillingPlansPage } from './pages/PlatformBillingPlansPage'
+import { PlatformBillingSubscriptionsPage } from './pages/PlatformBillingSubscriptionsPage'
+import { PlatformBillingInvoicesPage } from './pages/PlatformBillingInvoicesPage'
+import { PlatformBillingPaymentsPage } from './pages/PlatformBillingPaymentsPage'
+import { PlatformBillingDunningPage } from './pages/PlatformBillingDunningPage'
+import { OwnerBillingPage } from './pages/OwnerBillingPage'
 
 function SplashScreen() {
   return (
@@ -123,6 +131,18 @@ function AppRoutes() {
           <AccessDenied />
         ),
       )
+    } else if (routePath === '/platform/billing') {
+      setPage(isSuperAdmin(profile) ? <PlatformBillingPage /> : <AccessDenied />)
+    } else if (routePath === '/platform/billing/plans') {
+      setPage(isSuperAdmin(profile) ? <PlatformBillingPlansPage /> : <AccessDenied />)
+    } else if (routePath === '/platform/billing/subscriptions') {
+      setPage(isSuperAdmin(profile) ? <PlatformBillingSubscriptionsPage /> : <AccessDenied />)
+    } else if (routePath === '/platform/billing/invoices') {
+      setPage(isSuperAdmin(profile) ? <PlatformBillingInvoicesPage /> : <AccessDenied />)
+    } else if (routePath === '/platform/billing/payments') {
+      setPage(isSuperAdmin(profile) ? <PlatformBillingPaymentsPage /> : <AccessDenied />)
+    } else if (routePath === '/platform/billing/dunning') {
+      setPage(isSuperAdmin(profile) ? <PlatformBillingDunningPage /> : <AccessDenied />)
     } else if (routePath === '/') {
       setPage(isSuperAdmin(profile) ? <PlatformOverviewPage /> : <HomePage />)
     } else if (routePath === '/invites/new') {
@@ -150,6 +170,8 @@ function AppRoutes() {
       )
     } else if (routePath === '/plans') {
       setPage(canManagePayments(profile) ? <PlansPage /> : <AccessDenied />)
+    } else if (routePath === '/billing') {
+      setPage(canViewBilling(profile) ? <OwnerBillingPage /> : <AccessDenied />)
     } else if (routePath === '/notifications') {
       setPage(canViewNotifications(profile) ? <NotificationsPage /> : <AccessDenied />)
     } else if (routePath === '/settings/notifications') {

@@ -56,6 +56,10 @@ export function canManagePayments(profile: Me) {
   return hasPermission(profile, 'manage_payments')
 }
 
+export function canViewBilling(profile: Me) {
+  return profile.role === 'owner'
+}
+
 export function canViewBranches(profile: Me) {
   return profile.role === 'owner' || profile.role === 'admin'
 }

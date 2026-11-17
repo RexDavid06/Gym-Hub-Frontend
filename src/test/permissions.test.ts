@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   canManagePayments,
+  canViewBilling,
   canViewMemberDetail,
   canViewMembers,
   isSuperAdmin,
@@ -60,5 +61,15 @@ describe('canManagePayments', () => {
     expect(canManagePayments(profile('owner'))).toBe(true)
     expect(canManagePayments(profile('admin', ['manage_payments']))).toBe(true)
     expect(canManagePayments(profile('admin'))).toBe(false)
+  })
+})
+
+describe('canViewBilling', () => {
+  it('keeps platform billing to the gym owner', () => {
+    expect(canViewBilling(profile('owner'))).toBe(true)
+    expect(canViewBilling(profile('admin', ['manage_payments']))).toBe(false)
+    expect(canViewBilling(profile('trainer'))).toBe(false)
+    expect(canViewBilling(profile('member'))).toBe(false)
+    expect(canViewBilling(profile('super_admin'))).toBe(false)
   })
 })

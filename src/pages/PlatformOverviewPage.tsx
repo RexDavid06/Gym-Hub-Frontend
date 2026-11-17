@@ -1,10 +1,16 @@
 import { useCallback, useEffect, useState } from 'react'
 
 import { apiFetch } from '../api/client'
-import type { PaginatedPlatformGyms, PlatformGym, PlatformSummary } from '../api/types'
+import type {
+  PaginatedPlatformGyms,
+  PlatformBillingSummary,
+  PlatformGym,
+  PlatformSummary,
+} from '../api/types'
 import { Link } from '../components/Link'
 import { Badge, Card, ErrorState, LoadingState, PageHeader } from '../components/ui'
 import { formatDay } from '../lib/format'
+import { formatNaira } from '../lib/money'
 
 const summaryCards: {
   key: keyof PlatformSummary
@@ -23,6 +29,7 @@ const summaryCards: {
 export function PlatformOverviewPage() {
   const [summary, setSummary] = useState<PlatformSummary | null>(null)
   const [recentGyms, setRecentGyms] = useState<PlatformGym[]>([])
+  const [billing, setBilling] = useState<PlatformBillingSummary | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -30,12 +37,14 @@ export function PlatformOverviewPage() {
     setLoading(true)
     setError('')
     try {
-      const [summaryData, gymsData] = await Promise.all([
+      const [summaryData, gymsData, billingData] = await Promise.all([
         apiFetch('/api/platform/summary/', 'get'),
         apiFetch('/api/platform/gyms/', 'get', { query: { page_size: 5 } }),
+        apiFetch('/api/platform/billing/summary/', 'get').catch(() => null),
       ])
       setSummary(summaryData)
       setRecentGyms((gymsData as PaginatedPlatformGyms).results)
+      setBilling(billingData)
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : 'Unable to load the platform summary.')
     } finally {
@@ -84,6 +93,56 @@ export function PlatformOverviewPage() {
               </Card>
             ))}
           </div>
+
+          {billing ? (
+            <Card>
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-heading text-lg font-semibold text-brand-navy">
+                  Billing summary
+                </h2>
+                <Link
+                  to="/platform/billing"
+                  className="text-sm font-semibold text-brand-navy-light hover:underline"
+                >
+                  Open billing →
+                </Link>
+              </div>
+              <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                    MRR
+                  </p>
+                  <p className="mt-1 font-heading text-xl font-semibold text-brand-navy">
+                    {formatNaira(billing.monthly_recurring_revenue)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                    Outstanding
+                  </p>
+                  <p className="mt-1 font-heading text-xl font-semibold text-brand-navy">
+                    {formatNaira(billing.outstanding_balance)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                    Collected this month
+                  </p>
+                  <p className="mt-1 font-heading text-xl font-semibold text-brand-navy">
+                    {formatNaira(billing.collected_this_month)}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-wide text-brand-muted">
+                    Overdue invoices
+                  </p>
+                  <p className="mt-1 font-heading text-xl font-semibold text-brand-navy">
+                    {billing.overdue_invoice_count}
+                  </p>
+                </div>
+              </div>
+            </Card>
+          ) : null}
 
           <Card>
             <div className="flex items-center justify-between gap-3">
