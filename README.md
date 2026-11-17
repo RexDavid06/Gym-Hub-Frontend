@@ -47,6 +47,8 @@ TODO: move the refresh token to a secure, httpOnly cookie with CSRF protection b
 - Dashboard alerts for memberships expiring within 7 days and expired memberships.
 - Payment-only admins can open member detail, record payments, print receipts, and void payments without gaining member-list or trainer-assignment controls.
 - Platform administration for `super_admin`: `/platform` summary, searchable/filterable `/platform/gyms`, and `/platform/gyms/:id` with suspend/reactivate dialogs.
+- Platform billing for `super_admin` at `/platform/billing`: summary metrics, plans with versioned prices for all four billing intervals, gym subscriptions (change plan, cancel, reactivate), invoices (issue, mark paid, void with reason, send reminder), offline payments (record, void with reason), and dunning/overdue history.
+- Owner billing at `/billing`: plan, interval, status, current period, outstanding balance, invoices with print, payment history, and Pay now checkout when Paystack is configured. Back from checkout, the page shows a pending-confirmation notice until the webhook records the payment.
 - Owner notification settings at `/settings/notifications`: separate SMS/WhatsApp reminder and receipt toggles, provider availability, and disabled-channel protection.
 - Owner/admin notification history at `/notifications`: event, status, channel, and schedule filters, pagination, delivery details, and owner-only retry for failed messages.
 - Member WhatsApp opt-in control on member detail for owners and admins with `manage_members`.
@@ -54,11 +56,15 @@ TODO: move the refresh token to a secure, httpOnly cookie with CSRF protection b
 
 ## Tests
 
-Vitest and React Testing Library cover permission predicates, platform route guards, branch management/assignment, notification settings/history/retry, the member WhatsApp opt-in, and the payment-only member-detail access path. Run them with `npm run test:run` (or `npm test` for watch mode). The web CI workflow runs lint, typecheck, tests, and build.
+Vitest and React Testing Library cover permission predicates, platform route guards, branch management/assignment, notification settings/history/retry, the member WhatsApp opt-in, the payment-only member-detail access path, and Phase 10 billing: platform summary access, plan/price creation, invoice mark-paid/void, offline payment recording/void, subscription creation/cancellation, dunning reminders, owner read-only billing, and the mocked Paystack checkout redirect. Run them with `npm run test:run` (or `npm test` for watch mode). The web CI workflow runs lint, typecheck, tests, and build.
+
+Vitest uses the threads pool with `fileParallelism: false` (`vitest.config.ts`) so jsdom worker startup stays within the environment's limits; this makes `npm run test:run` deterministic at the cost of sequential files.
 
 ## Current limitations
 
 - Notifications are delivered outside the app by SMS or WhatsApp. There is no in-app notification inbox.
+- Online billing needs an operations step: Paystack is disabled until `BILLING_PROVIDER=paystack` and its keys are set on the API. Until then, owners cannot start checkout and staff record offline payments.
+- There are no billing screens on mobile, and no public pricing page.
 
 Brand colors and fonts are defined in `tailwind.config.js`; `VITE_API_BASE_URL` points at the API origin with no path suffix (default `http://127.0.0.1:8000`). The client appends the `/api/...` path itself, so a value ending in `/api` would produce `/api/api/...` requests.
 
